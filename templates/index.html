@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>產品管理系統 - FastAPI + HTMX + Alpine.js</title>
+    
+    <!-- 本地 CSS (Bootstrap 5 & Font Awesome 6) -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/all.min.css">
+
+    <!-- Google Fonts (Noto Sans TC & Roboto) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- HTMX & Alpine.js CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Roboto', 'Noto Sans TC', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .table-action-btn {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            line-height: 32px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="p-4" x-data="crudModal()">
+    <div class="container bg-white p-4 rounded shadow-sm">
+        <!-- 頂部標題與操作區 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary"><i class="fa-solid fa-box-open me-2"></i>產品管理系統</h2>
+            <button class="btn btn-primary" @click="openCreateModal()">
+                <i class="fa-solid fa-plus me-1"></i> 新增產品
+            </button>
+        </div>
+
+    <!-- HTMX 動態加載表格區域 -->
+    <div id="table-container" hx-get="/items/list" hx-trigger="refreshTable from:body">
+        {% include "item_table.html" %}
+    </div>
+    </div>
+
+    <!-- 1. 新增/編輯 Bootstrap Modal -->
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true" x-ref="modalElement">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" x-text="isEdit ? '編輯產品' : '新增產品'"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form @submit.prevent="submitForm($event)">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">產品名稱</label>
+                            <input type="text" name="name" class="form-control" x-model="form.name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">價格</label>
+                            <input type="number" step="0.01" name="price" class="form-control" x-model="form.price" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">描述</label>
+                            <textarea name="description" class="form-control" rows="3" x-model="form.description"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary" x-text="isEdit ? '更新' : '建立'"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 刪除確認 Bootstrap Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true" x-ref="deleteModalElement">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>確認刪除</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">您確定要刪除產品 <strong class="text-danger" x-text="deleteItemTarget.name"></strong> 嗎？</p>
+                    <small class="text-muted">此動作無法復原。</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" @click="confirmDelete()">確定刪除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 本地 JS Dependencies (Bootstrap 5) -->
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Alpine.js 與事件控制腳本 -->
+    <script>
+        // 確保 HTMX 更新內容後，Alpine 重新對新 DOM 綁定事件
+        document.addEventListener('htmx:afterSettle', function(evt) {
+            if (window.Alpine) {
+                Alpine.initTree(evt.detail.target);
+            }
+        });
+
+        function crudModal() {
+    return {
+        modalObj: null,
+        deleteModalObj: null,
+        isEdit: false,
+        form: { id: null, name: '', price: '', description: '' },
+        deleteItemTarget: { id: null, name: '' },
+
+        init() {
+            this.modalObj = new bootstrap.Modal(this.$refs.modalElement);
+            this.deleteModalObj = new bootstrap.Modal(this.$refs.deleteModalElement);
+        },
+        openCreateModal() {
+            this.isEdit = false;
+            this.form = { id: null, name: '', price: '', description: '' };
+            this.modalObj.show();
+        },
+        // 透過 DOM 元素的 dataset 解析資料，避免語法報錯
+        openEditModalFromEl(el) {
+            this.isEdit = true;
+            this.form = {
+                id: el.dataset.id,
+                name: el.dataset.name,
+                price: el.dataset.price,
+                description: el.dataset.description
+            };
+            this.modalObj.show();
+        },
+        openDeleteModalFromEl(el) {
+            this.deleteItemTarget = {
+                id: el.dataset.id,
+                name: el.dataset.name
+            };
+            this.deleteModalObj.show();
+        },
+        closeModal() {
+            this.modalObj.hide();
+        },
+
+        // 執行刪除 API
+        async confirmDelete() {
+            if (!this.deleteItemTarget.id) return;
+
+            try {
+                const response = await fetch(`/api/items/${this.deleteItemTarget.id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    this.deleteModalObj.hide();
+                    this.deleteItemTarget = { id: null, name: '' };
+                    htmx.trigger('#table-container', 'refreshTable');
+                } else {
+                    alert('刪除失敗，請重試');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('刪除請求發送失敗');
+            }
+        },
+
+        // 執行新增/編輯 API
+        async submitForm(event) {
+            const formData = new FormData(event.target);
+            const url = this.isEdit ? `/api/items/${this.form.id}` : '/api/items';
+            const method = this.isEdit ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    this.closeModal();
+                    htmx.trigger('#table-container', 'refreshTable');
+                } else {
+                    alert('操作失敗，請重試');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('傳送發生錯誤');
+            }
+        }
+    }
+}
+    </script>
+</body>
+</html>
