@@ -1,0 +1,30 @@
+<div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true" x-ref="modalElement">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" x-text="isEdit ? '編輯產品' : '新增產品'"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form @submit.prevent="submitForm($event)">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">產品名稱</label>
+                        <input type="text" name="name" class="form-control" x-model="form.name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">價格</label>
+                        <input type="number" step="0.01" name="price" class="form-control" x-model="form.price" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">描述</label>
+                        <textarea name="description" class="form-control" rows="3" x-model="form.description"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary" x-text="isEdit ? '更新' : '建立'"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

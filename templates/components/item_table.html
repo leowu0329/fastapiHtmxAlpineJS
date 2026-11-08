@@ -17,20 +17,18 @@
                 <td class="text-success fw-bold">${{ "%.2f"|format(item.price) }}</td>
                 <td class="text-secondary">{{ item.description or '-' }}</td>
                 <td class="text-center">
-                    <!-- 編輯按鈕：透過 data 屬性安全傳遞，再由 Alpine 的 $el 存取 -->
                     <button class="btn btn-sm btn-outline-warning table-action-btn me-1"
                             data-id="{{ item.id }}"
                             data-name="{{ item.name }}"
                             data-price="{{ item.price }}"
                             data-description="{{ item.description or '' }}"
-                            @click="openEditModalFromEl($el)">
+                            x-on:click="openEditModalFromEl($el)">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <!-- 刪除按鈕 -->
                     <button class="btn btn-sm btn-outline-danger table-action-btn"
                             data-id="{{ item.id }}"
                             data-name="{{ item.name }}"
-                            @click="openDeleteModalFromEl($el)">
+                            x-on:click="openDeleteModalFromEl($el)">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </td>

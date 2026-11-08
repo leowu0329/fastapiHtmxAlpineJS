@@ -1,0 +1,18 @@
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true" x-ref="deleteModalElement">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i>確認刪除</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">您確定要刪除產品 <strong class="text-danger" x-text="deleteItemTarget.name"></strong> 嗎？</p>
+                <small class="text-muted">此動作無法復原。</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" x-on:click="confirmDelete()">確定刪除</button>
+            </div>
+        </div>
+    </div>
+</div>
