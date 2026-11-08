@@ -11,6 +11,22 @@
                         <label class="form-label fw-bold">產品名稱</label>
                         <input type="text" name="name" class="form-control" x-model="form.name" required>
                     </div>
+                    
+                    <!-- 分類下拉選單與管理按鈕 -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">分類</label>
+                        <div class="input-group">
+                            <select name="category" class="form-select" x-model="form.category" id="category-select">
+                                {% for cat in categories %}
+                                <option value="{{ cat.name }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-secondary" type="button" x-on:click="openCategoryManagerModal()">
+                                <i class="fa-solid fa-gear me-1"></i>管理分類
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold">價格</label>
                         <input type="number" step="0.01" name="price" class="form-control" x-model="form.price" required>

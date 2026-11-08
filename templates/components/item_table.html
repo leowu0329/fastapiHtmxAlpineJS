@@ -4,6 +4,7 @@
             <tr>
                 <th scope="col" style="width: 80px;">#</th>
                 <th scope="col">名稱</th>
+                <th scope="col">分類</th>
                 <th scope="col">價格</th>
                 <th scope="col">描述</th>
                 <th scope="col" class="text-center" style="width: 120px;">操作</th>
@@ -14,12 +15,14 @@
             <tr>
                 <th scope="row" class="fw-normal text-muted">{{ item.id }}</th>
                 <td class="fw-bold">{{ item.name }}</td>
+                <td><span class="badge bg-info text-dark">{{ item.category or '雜項' }}</span></td>
                 <td class="text-success fw-bold">${{ "%.2f"|format(item.price) }}</td>
                 <td class="text-secondary">{{ item.description or '-' }}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-warning table-action-btn me-1"
                             data-id="{{ item.id }}"
                             data-name="{{ item.name }}"
+                            data-category="{{ item.category or '雜項' }}"
                             data-price="{{ item.price }}"
                             data-description="{{ item.description or '' }}"
                             x-on:click="openEditModalFromEl($el)">
@@ -35,7 +38,7 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="text-center py-4 text-muted">目前尚無資料</td>
+                <td colspan="6" class="text-center py-4 text-muted">目前尚無資料</td>
             </tr>
             {% endfor %}
         </tbody>

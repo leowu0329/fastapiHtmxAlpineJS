@@ -1,0 +1,21 @@
+<ul class="list-group list-group-flush">
+    {% for cat in categories %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>{{ cat.name }}</span>
+        {% if cat.name not in ['雜項', '耗材'] %}
+        <button class="btn btn-sm btn-outline-danger" x-on:click="deleteCategory({{ cat.id }})">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+        {% else %}
+        <span class="badge bg-secondary">預設分類</span>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+
+<!-- 透過 Out-of-Band (OOB) 同步更新下拉選單 -->
+<select name="category" class="form-select" id="category-select" hx-swap-oob="true">
+    {% for cat in categories %}
+    <option value="{{ cat.name }}">{{ cat.name }}</option>
+    {% endfor %}
+</select>

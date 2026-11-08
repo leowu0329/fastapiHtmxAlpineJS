@@ -1,0 +1,36 @@
+<!-- 分類管理 Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true" x-ref="categoryModalElement">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-tags me-2"></i>分類管理</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- 新增分類表單 -->
+                <form @submit.prevent="submitCategoryForm($event)" class="mb-4">
+                    <label class="form-label fw-bold">新增新分類</label>
+                    <div class="input-group">
+                        <input type="text" name="name" class="form-control" x-model="newCategoryName" placeholder="輸入分類名稱..." required>
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fa-solid fa-plus me-1"></i>新增
+                        </button>
+                    </div>
+                </form>
+
+                <!-- HTMX 分類列表區塊（加上滾動條樣式與外框） -->
+                <label class="form-label fw-bold">現有分類列表</label>
+                <div id="category-list-container" 
+                     class="border rounded p-1"
+                     style="max-height: 250px; overflow-y: auto;"
+                     hx-get="/categories/options" 
+                     hx-trigger="refreshCategories from:body">
+                    {% include "components/category_list.html" %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>

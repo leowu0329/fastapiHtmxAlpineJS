@@ -1,3 +1,4 @@
+# config/database.py
 import os
 from pathlib import Path
 from supabase import create_client, Client
@@ -14,3 +15,4 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 TABLE_NAME = "products"
+CATEGORY_TABLE_NAME = "categories"
