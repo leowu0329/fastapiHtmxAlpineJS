@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>產品管理系統 - FastAPI + HTMX + Alpine.js</title>
-    
+
+    <!-- 本地 CSS (Bootstrap 5 & Font Awesome 6) -->
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/all.min.css">
+
+    <!-- Google Fonts (Noto Sans TC & Roboto) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
 
+    <!-- HTMX & Alpine.js CDN -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -19,24 +26,40 @@
             font-family: 'Roboto', 'Noto Sans TC', sans-serif;
             background-color: #f8f9fa;
         }
+
         .table-action-btn {
             width: 32px;
             height: 32px;
             padding: 0;
-            line-height: 32px;
+            line-height: 30px;
             text-align: center;
         }
     </style>
 </head>
-<body class="p-4" x-data="crudModal()">
-    <div class="container bg-white p-4 rounded shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold text-primary"><i class="fa-solid fa-box-open me-2"></i>產品管理系統</h2>
-            <button class="btn btn-primary" x-on:click="openCreateModal()">
-                <i class="fa-solid fa-plus me-1"></i> 新增產品
-            </button>
+
+<body class="p-2 p-sm-4" x-data="crudModal()">
+    <div class="container-fluid container-md bg-white p-3 p-sm-4 rounded shadow-sm">
+        <!-- 頂部標題與操作區 (PC 模式 4/12 靠左、3/12 靠右) -->
+        <div class="row align-items-center mb-4 g-3">
+            <!-- 左側 4/12：產品管理系統 (含 logo) -->
+            <div class="col-12 col-md-4">
+                <h2 class="fw-bold text-primary mb-0 h4 h2-sm d-flex align-items-center">
+                    <i class="fa-solid fa-box-open me-2 fs-3"></i>產品管理系統
+                </h2>
+            </div>
+
+            <!-- 中間留空自動擠壓 -->
+            <div class="d-none d-md-block col-md-5"></div>
+
+            <!-- 右側 3/12：新增產品按鈕 (靠右對齊) -->
+            <div class="col-12 col-md-3 text-start text-md-end">
+                <button class="btn btn-primary w-100 w-md-auto px-3 py-2" x-on:click="openCreateModal()">
+                    <i class="fa-solid fa-plus me-1"></i> 新增產品
+                </button>
+            </div>
         </div>
 
+        <!-- HTMX 動態加載表格區域 -->
         <div id="table-container" hx-get="/items/list" hx-trigger="refreshTable from:body">
             {% include "components/item_table.html" %}
         </div>
@@ -47,10 +70,12 @@
     {% include "components/delete_modal.html" %}
     {% include "components/category_modal.html" %}
 
+    <!-- 本地 JS Dependencies (Bootstrap 5) -->
     <script src="/static/js/bootstrap.bundle.min.js"></script>
-    
+
+    <!-- Alpine.js 與事件控制腳本 -->
     <script>
-        document.addEventListener('htmx:afterSettle', function(evt) {
+        document.addEventListener('htmx:afterSettle', function (evt) {
             if (window.Alpine) {
                 Alpine.initTree(evt.detail.target);
             }
@@ -102,6 +127,7 @@
                 },
                 async confirmDelete() {
                     if (!this.deleteItemTarget.id) return;
+
                     try {
                         const response = await fetch(`/api/items/${this.deleteItemTarget.id}`, { method: 'DELETE' });
                         if (response.ok) {
@@ -115,6 +141,7 @@
                     const formData = new FormData(event.target);
                     const url = this.isEdit ? `/api/items/${this.form.id}` : '/api/items';
                     const method = this.isEdit ? 'PUT' : 'POST';
+
                     try {
                         const response = await fetch(url, { method: method, body: formData });
                         if (response.ok) {
@@ -130,8 +157,11 @@
                         if (response.ok) {
                             this.newCategoryName = '';
                             htmx.trigger('#category-list-container', 'refreshCategories');
-                        } else { alert('新增分類失敗'); }
-                    } catch (err) { console.error(err); }
+                        } else {
+                            const errData = await response.json().catch(() => ({}));
+                            alert(errData.detail || '新增分類失敗');
+                        }
+                    } catch (err) { console.error(err); alert('網路請求失敗'); }
                 },
                 async deleteCategory(id) {
                     if (!confirm('確定刪除此分類嗎？')) return;
@@ -146,4 +176,5 @@
         }
     </script>
 </body>
+
 </html>

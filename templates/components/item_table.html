@@ -1,13 +1,14 @@
-<div class="table-responsive">
-    <table class="table table-hover align-middle border">
+<!-- 1. 桌機模式：標準表格 (d-none d-md-block) -->
+<div class="table-responsive d-none d-md-block">
+    <table class="table table-hover align-middle border text-nowrap">
         <thead class="table-light">
             <tr>
-                <th scope="col" style="width: 80px;">#</th>
-                <th scope="col">名稱</th>
-                <th scope="col">分類</th>
-                <th scope="col">價格</th>
-                <th scope="col">描述</th>
-                <th scope="col" class="text-center" style="width: 120px;">操作</th>
+                <th scope="col" style="min-width: 60px;">#</th>
+                <th scope="col" style="min-width: 140px;">名稱</th>
+                <th scope="col" style="min-width: 100px;">分類</th>
+                <th scope="col" style="min-width: 100px;">價格</th>
+                <th scope="col" style="min-width: 160px;">描述</th>
+                <th scope="col" class="text-center" style="min-width: 100px;">操作</th>
             </tr>
         </thead>
         <tbody>
@@ -17,7 +18,7 @@
                 <td class="fw-bold">{{ item.name }}</td>
                 <td><span class="badge bg-info text-dark">{{ item.category or '雜項' }}</span></td>
                 <td class="text-success fw-bold">${{ "%.2f"|format(item.price) }}</td>
-                <td class="text-secondary">{{ item.description or '-' }}</td>
+                <td class="text-secondary text-truncate" style="max-width: 200px;">{{ item.description or '-' }}</td>
                 <td class="text-center">
                     <button class="btn btn-sm btn-outline-warning table-action-btn me-1"
                             data-id="{{ item.id }}"
@@ -43,4 +44,63 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- 2. 手機模式：客製化藍色邊角卡片 (d-block d-md-none) -->
+<div class="d-block d-md-none">
+    {% for item in items %}
+    <div class="card mb-3 border-primary shadow-sm overflow-hidden" style="border-radius: 12px; background-color: #dbeafe;">
+        <div class="d-flex align-items-stretch">
+            <!-- 左側編號藍色圓角色塊 -->
+            <div class="bg-primary text-white d-flex align-items-center justify-content-center px-3 fs-5 fw-bold" style="min-width: 48px;">
+                {{ item.id }}
+            </div>
+            
+            <!-- 中間內容區域 -->
+            <div class="p-2 flex-grow-1">
+                <div class="mb-1 fs-6">
+                    <span class="fw-normal">名稱:</span>
+                    <strong class="text-dark">{{ item.name }}</strong>
+                </div>
+                <div class="mb-1 fs-6">
+                    <span class="fw-normal">分類:</span>
+                    <span class="text-dark">{{ item.category or '雜項' }}</span>
+                </div>
+                <div class="mb-1 fs-6">
+                    <span class="fw-normal">價格:</span>
+                    <strong class="text-dark">{{ item.price }}</strong>
+                </div>
+                <div class="fs-6 text-truncate" style="max-width: 200px;">
+                    <span class="fw-normal">描述:</span>
+                    <span class="text-secondary">{{ item.description or '-' }}</span>
+                </div>
+            </div>
+
+            <!-- 右側操作按鈕 (白底卡片設計) -->
+            <div class="p-2 d-flex align-items-start">
+                <div class="bg-white p-1 rounded border d-flex gap-1 shadow-sm">
+                    <button class="btn btn-sm btn-outline-warning table-action-btn"
+                            data-id="{{ item.id }}"
+                            data-name="{{ item.name }}"
+                            data-category="{{ item.category or '雜項' }}"
+                            data-price="{{ item.price }}"
+                            data-description="{{ item.description or '' }}"
+                            x-on:click="openEditModalFromEl($el)">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger table-action-btn"
+                            data-id="{{ item.id }}"
+                            data-name="{{ item.name }}"
+                            x-on:click="openDeleteModalFromEl($el)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted bg-white rounded border">
+        目前尚無資料
+    </div>
+    {% endfor %}
 </div>
